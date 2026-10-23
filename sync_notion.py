@@ -1,81 +1,91 @@
 import os
-import requests
-import pandas as pd
+import csv
+from notion_client import Client
 
-# Điền trực tiếp thông tin vào đây để loại bỏ lỗi truyền biến môi trường trên GitHub
-NOTION_TOKEN = "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"
-OFFLINE_DB_ID = "1c282f39348181bab9ead47aae938e2b"
-ONLINE_DB_ID = "1c282f393481800ab574d6b5bef982c0"
+# Lấy token trực tiếp từ GitHub Actions Secrets (đã cài ở Settings)
+NOTION_TOKEN = os.getenv("NOTION_TOKEN")
+notion = Client(auth=NOTION_TOKEN)
 
-headers = {
-    "Authorization": f"Bearer {NOTION_TOKEN}",
-    "Notion-Version": "2022-06-28",
-    "Content-Type": "application/json"
-}
+DATABASE_OFFLINE_ID = "1c282f39-3481-8194-a23d-000b0e4c89b4"
+DATABASE_ONLINE_ID  = "1c282f39-3481-81c7-9acc-000bea275dd5"
 
-def extract_property_value(prop):
-    """Tự động nhận diện và lấy dữ liệu từ các loại cột trên Notion"""
-    p_type = prop.get("type")
-    if p_type == "title":
-        title_list = prop.get("title", [])
-        return title_list[0]["plain_text"] if title_list else ""
-    elif p_type == "rich_text":
-        text_list = prop.get("rich_text", [])
-        return text_list[0]["plain_text"] if text_list else ""
-    elif p_type == "number":
-        return prop.get("number", "")
-    elif p_type == "select":
-        select_obj = prop.get("select")
-        return select_obj.get("name", "") if select_obj else ""
-    elif p_type == "multi_select":
-        return ", ".join([item["name"] for item in prop.get("multi_select", [])])
-    elif p_type == "url":
-        return prop.get("url", "")
-    elif p_type == "status":
-        status_obj = prop.get("status")
-        return status_obj.get("name", "") if status_obj else ""
-    return ""
-
-def fetch_notion_db(db_id):
-    url = f"https://api.notion.com/v1/databases/{db_id}/query"
+def fetch_and_write_csv(database_id, filename):
+    print(f"Đang tải dữ liệu từ Database ID: {database_id}...")
+    results = []
     has_more = True
     start_cursor = None
-    results = []
 
     while has_more:
-        payload = {}
+        kwargs = {"database_id": database_id}
         if start_cursor:
-            payload["start_cursor"] = start_cursor
-
-        res = requests.post(url, headers=headers, json=payload)
-        if res.status_code != 200:
-            print(f"Lỗi kết nối Notion API ({res.status_code}): {res.text}")
-            break
+            kwargs["start_cursor"] = start_cursor
         
-        data = res.json()
-        results.extend(data.get("results", []))
-        has_more = data.get("has_more", False)
-        start_cursor = data.get("next_cursor", None)
+        response = notion.databases.query(**kwargs)
+        results.extend(response.get("results", []))
+        has_more = response.get("has_more", False)
+        start_cursor = response.get("next_cursor")
+
+    if not results:
+        print(f"Cảnh báo: Không tìm thấy dòng nào trong {filename}!")
+        return
+
+    # Lấy tiêu đề các cột
+    first_page = results[0]["properties"]
+    headers = list(first_page.keys())
+
+    # Đưa cột Tên/Title lên đầu nếu có
+    title_headers = [h for h, v in first_page.items() if v["type"] == "title"]
+    if title_headers:
+        main_title = title_headers[0]
+        headers.remove(main_title)
+        headers.insert(0, main_title)
 
     rows = []
     for page in results:
-        props = page.get("properties", {})
-        row_data = {}
-        for col_name, prop_data in props.items():
-            row_data[col_name] = extract_property_value(prop_data)
-        rows.append(row_data)
+        props = page["properties"]
+        row = {}
+        for header in headers:
+            prop = props.get(header, {})
+            p_type = prop.get("type")
+            val = ""
 
-    return pd.DataFrame(rows)
+            if p_type == "title":
+                texts = prop.get("title", [])
+                val = "".join([t.get("plain_text", "") for t in texts])
+            elif p_type == "rich_text":
+                texts = prop.get("rich_text", [])
+                val = "".join([t.get("plain_text", "") for t in texts])
+            elif p_type == "select":
+                sel = prop.get("select")
+                val = sel.get("name", "") if sel else ""
+            elif p_type == "multi_select":
+                sels = prop.get("multi_select", [])
+                val = ", ".join([s.get("name", "") for s in sels])
+            elif p_type == "number":
+                val = prop.get("number", "")
+            elif p_type == "url":
+                val = prop.get("url", "")
+            elif p_type == "files":
+                files = prop.get("files", [])
+                urls = []
+                for f in files:
+                    if f.get("type") == "file":
+                        urls.append(f.get("file", {}).get("url", ""))
+                    elif f.get("type") == "external":
+                        urls.append(f.get("external", {}).get("url", ""))
+                val = ", ".join(urls)
+
+            row[header] = val
+        rows.append(row)
+
+    # Ghi ra file CSV
+    with open(filename, mode="w", newline="", encoding="utf-8-sig") as f:
+        writer = csv.DictWriter(f, fieldnames=headers)
+        writer.writeheader()
+        writer.writerows(rows)
+
+    print(f"Thành công! Đã ghi {len(rows)} dòng vào {filename}.")
 
 if __name__ == "__main__":
-    if OFFLINE_DB_ID:
-        print("Đang tải dữ liệu Game Offline...")
-        df_offline = fetch_notion_db(OFFLINE_DB_ID)
-        df_offline.to_csv("GAME OFFLINE.csv", index=False, encoding="utf-8-sig")
-        print(f"✅ Đã tạo file 'GAME OFFLINE.csv' với {len(df_offline)} dòng.")
-
-    if ONLINE_DB_ID:
-        print("Đang tải dữ liệu Game Online...")
-        df_online = fetch_notion_db(ONLINE_DB_ID)
-        df_online.to_csv("GAME ONLINE.csv", index=False, encoding="utf-8-sig")
-        print(f"✅ Đã tạo file 'GAME ONLINE.csv' với {len(df_online)} dòng.")
+    fetch_and_write_csv(DATABASE_OFFLINE_ID, "GAME OFFLINE.csv")
+    fetch_and_write_csv(DATABASE_ONLINE_ID, "GAME ONLINE.csv")
