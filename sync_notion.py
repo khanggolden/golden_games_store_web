@@ -2,12 +2,12 @@ import os
 import csv
 from notion_client import Client
 
-# Lấy token trực tiếp từ GitHub Actions Secrets (đã cài ở Settings)
+# Lấy token trực tiếp từ GitHub Actions Secrets
 NOTION_TOKEN = os.getenv("NOTION_TOKEN")
 notion = Client(auth=NOTION_TOKEN)
 
 DATABASE_OFFLINE_ID = "1c282f39-3481-8194-a23d-000b0e4c89b4"
-DATABASE_ONLINE_ID  = "1c282f39-3481-81c7-9acc-000bea275dd5"
+DATABASE_ONLINE_ID = "1c282f39-3481-81c7-9acc-000bea275dd5"
 
 def fetch_and_write_csv(database_id, filename):
     print(f"Đang tải dữ liệu từ Database ID: {database_id}...")
