@@ -33,7 +33,6 @@
             <div class="flex items-center gap-2">
                 <button onclick="filterType('ALL')" id="nav-ALL" class="px-4 py-2 rounded-xl text-sm font-semibold bg-violet-600 text-white">Tất Cả</button>
                 <button onclick="filterType('OFFLINE')" id="nav-OFFLINE" class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:bg-gray-800">Offline</button>
-                <button onclick="filterType('ONLINE')" id="nav-ONLINE" class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:bg-gray-800">Online</button>
             </div>
         </div>
     </header>
@@ -41,7 +40,7 @@
     <!-- MAIN CONTENT -->
     <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
         <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
-            <h2 class="text-xl font-bold text-white">Danh Sách Game Trực Tiếp Từ Notion</h2>
+            <h2 class="text-xl font-bold text-white">Danh Sách Kho Game Notion</h2>
             <span id="gameCountBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-800 text-gray-400">0 Game</span>
         </div>
 
@@ -71,7 +70,7 @@
     <!-- SCRIPT -->
     <script>
         const NOTION_TOKEN = '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';
-        const DATABASE_ID = '1c282f39348180b0bd13d6d7c719b83f';
+        const DATABASE_ID = '1c282f39348181bab9ead47aae938e2b'; // ID chuẩn từ link Notion của anh
 
         let RAW_GAMES_DATABASE = [];
         let currentFilter = 'ALL';
@@ -96,21 +95,16 @@
                 return data.results.map((item, index) => {
                     const props = item.properties;
                     
-                    // Đọc chuẩn theo các cột thực tế từ Notion của anh
                     const title = props.Title?.title[0]?.plain_text || "Game Chưa Đặt Tên";
                     const statusName = props.Status?.select?.name || props.Status?.status?.name || "Success";
                     
-                    // Phân loại Offline / Online dựa vào Status hoặc tên
-                    const type = statusName === "Steam" ? "ONLINE" : "OFFLINE";
-                    
-                    // Đọc dung lượng từ cột 'Dung Lượng'
-                    const sizeVal = props["Dung Lượng"]?.number || props.Size?.number || 0;
+                    const sizeVal = props["Dung Lượng"]?.number || 0;
                     const size = sizeVal ? `${sizeVal} GB` : "N/A";
                     
                     const image = props.Image?.url || "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800";
                     const link = props.Link?.url || "https://fshare.vn";
 
-                    return { id: index + 1, name: title, type: type, size: size, status: statusName, image: image, link: link };
+                    return { id: index + 1, name: title, type: "OFFLINE", size: size, status: statusName, image: image, link: link };
                 });
             } catch (error) {
                 console.error("Lỗi kết nối Notion:", error);
@@ -125,12 +119,6 @@
 
         function filterType(type) {
             currentFilter = type;
-            ['ALL', 'OFFLINE', 'ONLINE'].forEach(t => {
-                const btn = document.getElementById(`nav-${t}`);
-                if(btn) {
-                    btn.className = t === type ? "px-4 py-2 rounded-xl text-sm font-semibold bg-violet-600 text-white" : "px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:bg-gray-800";
-                }
-            });
             renderGames();
         }
 
@@ -142,7 +130,7 @@
             document.getElementById('gameCountBadge').innerText = `${filtered.length} Game`;
 
             if(filtered.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">Không tìm thấy dữ liệu trong Database. Hãy kiểm tra lại kết nối Notion Database ID!</div>';
+                grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">Chưa có game nào trong database hoặc chưa cấp quyền connection!</div>';
                 return;
             }
 
@@ -151,7 +139,7 @@
                     <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-lg card-hover-glow flex flex-col cursor-pointer" onclick="openModal(${game.id})">
                         <div class="relative w-full poster-aspect bg-gray-950 overflow-hidden">
                             <img src="${game.image}" class="w-full h-full object-cover" loading="lazy">
-                            <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold ${game.type === 'ONLINE' ? 'bg-cyan-600' : 'bg-amber-600'} text-white">${game.type}</span>
+                            <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold bg-amber-600 text-white">OFFLINE</span>
                             <span class="absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold bg-black/70 text-amber-300">${game.size}</span>
                         </div>
                         <div class="p-3 flex flex-col justify-between flex-grow">
