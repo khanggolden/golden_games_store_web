@@ -24,6 +24,8 @@ jobs:
           pip install notion-client requests pandas
 
       - name: Run Sync Script
+        env:
+          NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
         run: python sync_notion.py
 
       - name: Commit and Push changes
