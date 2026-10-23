@@ -2,7 +2,7 @@ name: Auto Sync Notion Database
 
 on:
   schedule:
-    - cron: '0 */3 * * *'
+    - cron: '0 */3 * * *'  # Runs at 0 minutes past the hour, every 3 hours
   workflow_dispatch:
 
 jobs:
@@ -20,7 +20,8 @@ jobs:
           python-version: '3.10'
 
       - name: Install dependencies
-        run: pip install requests pandas
+        run: |
+          pip install notion-client requests pandas
 
       - name: Run Sync Script
         run: python sync_notion.py
