@@ -1,29 +1,40 @@
 import os
 import csv
-from notion_client import Client
+import requests
 
-# Lấy token trực tiếp từ GitHub Actions Secrets
+# Lấy token từ GitHub Secrets
 NOTION_TOKEN = os.getenv("NOTION_TOKEN")
-notion = Client(auth=NOTION_TOKEN)
 
 DATABASE_OFFLINE_ID = "1c282f39-3481-8194-a23d-000b0e4c89b4"
 DATABASE_ONLINE_ID = "1c282f39-3481-81c7-9acc-000bea275dd5"
 
+HEADERS = {
+    "Authorization": f"Bearer {NOTION_TOKEN}",
+    "Notion-Version": "2022-06-28",
+    "Content-Type": "application/json"
+}
+
 def fetch_and_write_csv(database_id, filename):
     print(f"Đang tải dữ liệu từ Database ID: {database_id}...")
+    url = f"https://api.notion.com/v1/databases/{database_id}/query"
     results = []
     has_more = True
     start_cursor = None
 
     while has_more:
-        kwargs = {"database_id": database_id}
+        payload = {}
         if start_cursor:
-            kwargs["start_cursor"] = start_cursor
+            payload["start_cursor"] = start_cursor
         
-        response = notion.databases.query(**kwargs)
-        results.extend(response.get("results", []))
-        has_more = response.get("has_more", False)
-        start_cursor = response.get("next_cursor")
+        response = requests.post(url, headers=HEADERS, json=payload)
+        if response.status_code != 200:
+            print(f"Lỗi khi gọi API Notion: {response.status_code} - {response.text}")
+            return
+            
+        data = response.json()
+        results.extend(data.get("results", []))
+        has_more = data.get("has_more", False)
+        start_cursor = data.get("next_cursor")
 
     if not results:
         print(f"Cảnh báo: Không tìm thấy dòng nào trong {filename}!")
@@ -78,7 +89,7 @@ def fetch_and_write_csv(database_id, filename):
             row[header] = val
         rows.append(row)
 
-    # Ghi ra file CSV
+    # Ghi ra file CSV chuẩn tiếng Việt
     with open(filename, mode="w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=headers)
         writer.writeheader()
