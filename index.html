@@ -10,277 +10,83 @@
     <!-- Thư viện đọc file CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
-        body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #f3f4f6; }
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #0b0f19; }
+        body { font-family: 'Inter', sans-serif; background-color: #0d111d; color: #f3f4f6; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #0d111d; }
         ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
-        .poster-aspect { aspect-ratio: 2 / 3; }
-        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.35); }
-        .hero-gradient { background: linear-gradient(to top, #0b0f19 5%, rgba(11, 15, 25, 0.85) 45%, rgba(11, 15, 25, 0.3) 100%); }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .card-aspect { aspect-ratio: 16 / 9; }
+        .card-hover { transition: all 0.25s ease; }
+        .card-hover:hover { transform: translateY(-4px); box-shadow: 0 10px 25px -5px rgba(139, 92, 246, 0.4); }
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-violet-600 selection:text-white">
 
-    <!-- HEADER / NAVBAR -->
-    <header class="sticky top-0 z-40 bg-gray-950/90 backdrop-blur-md border-b border-gray-800/80">
-        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between gap-4">
-            <a href="#" onclick="filterType('ALL'); return false;" class="flex items-center gap-3 shrink-0">
-                <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-violet-600 flex items-center justify-center text-white text-xl shadow-lg">
-                    <i class="fa-solid fa-gamepad"></i>
+    <!-- HEADER / NAVBAR (CHUẨN ROPHIM) -->
+    <header class="sticky top-0 z-50 bg-[#090d16]/95 backdrop-blur-md border-b border-gray-800/60">
+        <div class="max-w-[1440px] mx-auto px-4 lg:px-8 h-16 flex items-center justify-between gap-6">
+            <!-- LOGO -->
+            <a href="#" onclick="filterType('ALL'); return false;" class="flex items-center gap-2.5 shrink-0">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-violet-600 flex items-center justify-center text-white text-lg shadow-md">
+                    <i class="fa-solid fa-play"></i>
                 </div>
                 <div>
-                    <span class="font-extrabold text-base tracking-wide text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-cyan-400">KHANG GOLDEN</span>
-                    <span class="block text-[10px] text-gray-400 tracking-widest uppercase font-semibold">GAMES STORE</span>
+                    <span class="font-black text-lg tracking-tight text-white">RoPhim</span>
+                    <span class="block text-[9px] text-gray-400 tracking-widest uppercase font-semibold">Game Hay Cực Rõ</span>
                 </div>
             </a>
 
             <!-- SEARCH BAR -->
-            <div class="flex-grow max-w-md hidden md:block">
+            <div class="flex-grow max-w-sm hidden md:block">
                 <div class="relative">
-                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                    <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 text-xs">
                         <i class="fa-solid fa-search"></i>
                     </span>
-                    <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Tìm kiếm tựa game..." class="w-full pl-10 pr-4 py-2 bg-gray-900 border border-gray-800 rounded-xl text-sm text-white focus:outline-none focus:border-violet-500 transition-colors">
+                    <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Tìm kiếm game, thể loại..." class="w-full pl-9 pr-4 py-1.5 bg-[#141a29] border border-gray-800 rounded-lg text-xs text-white focus:outline-none focus:border-violet-500 transition-colors">
                 </div>
             </div>
 
-            <div class="flex items-center gap-2 shrink-0">
-                <button onclick="filterType('ALL')" id="nav-ALL" class="px-4 py-2 rounded-xl text-xs md:text-sm font-semibold bg-violet-600 text-white transition-all shadow-md">Tất cả</button>
-                <button onclick="filterType('OFFLINE')" id="nav-OFFLINE" class="px-4 py-2 rounded-xl text-xs md:text-sm font-semibold text-gray-300 hover:bg-gray-800 transition-all">Offline</button>
-                <button onclick="filterType('ONLINE')" id="nav-ONLINE" class="px-4 py-2 rounded-xl text-xs md:text-sm font-semibold text-gray-300 hover:bg-gray-800 transition-all">Online</button>
+            <!-- MENU ITEMS -->
+            <div class="flex items-center gap-5 text-xs font-semibold text-gray-300">
+                <a href="#" onclick="filterType('ALL'); return false;" class="hover:text-white transition-colors">Chủ Đề</a>
+                <a href="#" onclick="filterType('ALL'); return false;" class="hover:text-white transition-colors flex items-center gap-1">Thể Loại <i class="fa-solid fa-caret-down text-[10px]"></i></a>
+                <a href="#" onclick="filterType('OFFLINE'); return false;" class="hover:text-white transition-colors">Game Offline</a>
+                <a href="#" onclick="filterType('ONLINE'); return false;" class="hover:text-white transition-colors">Game Online</a>
+                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-500 text-black uppercase">NEW</span>
+                <a href="#" class="hover:text-white transition-colors">Thành Viên</a>
             </div>
         </div>
     </header>
 
-    <!-- HERO BANNER -->
-    <section class="relative w-full h-[380px] md:h-[460px] bg-gray-900 overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1600" class="w-full h-full object-cover filter brightness-75" alt="Hero Banner">
-        <div class="absolute inset-0 hero-gradient flex items-end">
-            <div class="max-w-7xl mx-auto px-4 pb-10 w-full flex flex-col md:flex-row md:items-end justify-between gap-6">
-                <div class="space-y-3 max-w-2xl">
-                    <div class="flex items-center gap-2">
-                        <span class="px-2.5 py-1 rounded-md text-xs font-bold bg-amber-500 text-black uppercase tracking-wider">Nổi Bật</span>
-                        <span class="text-xs text-amber-300 font-medium"><i class="fa-solid fa-fire mr-1"></i> Kho game cập nhật 2026</span>
-                    </div>
-                    <h1 class="text-3xl md:text-5xl font-black text-white tracking-tight">KHANG GOLDEN QUEST</h1>
-                    <p class="text-xs md:text-sm text-gray-300 line-clamp-2">Khám phá kho tàng game Offline & Online đỉnh cao, tốc độ tải siêu tốc, giao diện điện ảnh mượt mà.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
     <!-- MAIN CONTENT -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
-        <div class="mb-6 md:hidden">
+    <main class="flex-grow max-w-[1440px] mx-auto px-4 lg:px-8 py-8 w-full space-y-10">
+
+        <!-- TIM KIEM MOBILE -->
+        <div class="md:hidden">
             <div class="relative">
-                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
+                <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400 text-xs">
                     <i class="fa-solid fa-search"></i>
                 </span>
-                <input type="text" id="searchInputMobile" oninput="handleSearchMobile()" placeholder="Tìm kiếm tựa game..." class="w-full pl-10 pr-4 py-2.5 bg-gray-900 border border-gray-800 rounded-xl text-sm text-white focus:outline-none focus:border-violet-500">
+                <input type="text" id="searchInputMobile" oninput="handleSearchMobile()" placeholder="Tìm kiếm game, thể loại..." class="w-full pl-9 pr-4 py-2 bg-[#141a29] border border-gray-800 rounded-lg text-xs text-white focus:outline-none">
             </div>
         </div>
 
-        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
-            <h2 class="text-lg md:text-xl font-bold text-white flex items-center gap-2">
-                <i class="fa-solid fa-gamepad text-violet-500"></i> Danh Sách Kho Game
-            </h2>
-            <span id="gameCountBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-900 border border-gray-800 text-violet-400">0 Game</span>
-        </div>
-
-        <!-- LƯỚI HIỂN THỊ GAME -->
-        <div id="gameGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
-            <div class="col-span-full text-center py-20 text-violet-400">
-                <i class="fa-solid fa-spinner fa-spin text-3xl mb-3"></i>
-                <p class="font-bold text-sm">Đang tải dữ liệu trực tiếp từ GitHub...</p>
-            </div>
-        </div>
-    </main>
-
-    <!-- MODAL -->
-    <div id="gameModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-        <div class="relative w-full max-w-lg bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-4 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-gray-800 pb-3">
-                <h3 id="modalTitle" class="text-lg font-bold text-white">Tên Game</h3>
-                <button onclick="closeModal()" class="text-gray-400 hover:text-white p-1.5"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            <div class="flex gap-4 items-center">
-                <img id="modalPoster" src="" class="w-28 h-40 object-cover rounded-xl border border-gray-800 shrink-0" alt="Poster">
-                <div class="space-y-2 text-sm">
-                    <p id="modalType" class="text-xs font-bold text-amber-400 uppercase">Phân loại: --</p>
-                    <p id="modalSize" class="text-xs text-gray-300">Dung lượng: --</p>
-                    <p id="modalStatus" class="text-xs text-gray-400">Trạng thái: --</p>
-                    <p id="modalUpdated" class="text-xs text-gray-400">Cập nhật: --</p>
-                </div>
-            </div>
-            <div class="pt-2">
-                <a id="modalDownloadBtn" href="#" target="_blank" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-extrabold text-center block shadow-lg hover:opacity-90 transition-opacity">
-                    <i class="fa-solid fa-download mr-2"></i> TẢI NGAY TỐC ĐỘ CAO
+        <!-- ROW 1: GAME OFFLINE MỚI -->
+        <section class="flex flex-col lg:flex-row gap-6 items-start">
+            <!-- Sidebar tiêu đề bên trái -->
+            <div class="w-full lg:w-48 shrink-0 pt-2 space-y-2">
+                <h2 class="text-2xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-orange-500">
+                    Game Offline<br>Mới
+                </h2>
+                <a href="#" onclick="filterType('OFFLINE'); return false;" class="text-xs text-gray-400 hover:text-amber-400 font-medium inline-flex items-center gap-1 transition-colors">
+                    Xem toàn bộ <i class="fa-solid fa-angle-right text-[10px]"></i>
                 </a>
             </div>
-        </div>
-    </div>
 
-    <footer class="bg-gray-950 border-t border-gray-800/80 py-8 mt-12 text-center text-xs text-gray-500">
-        <p>&copy; 2026 Khang Golden - Golden Games Store. All rights reserved.</p>
-    </footer>
-
-    <!-- SCRIPT ĐỌC TRỰC TIẾP 2 FILE CSV TRÊN GITHUB -->
-    <script>
-        let ALL_GAMES = [];
-        let currentFilter = 'ALL';
-        let searchQuery = '';
-
-        // Đổi tên đường dẫn dưới đây thành tên tài khoản GitHub và Repo của anh nếu cần,
-        // hiện tại đang dùng đường dẫn tương đối trỏ trực tiếp đến 2 file CSV cùng thư mục.
-        async function loadAllCSVData() {
-            try {
-                const [offlineData, onlineData] = await Promise.all([
-                    fetchCSV('GAME OFFLINE.csv', 'OFFLINE'),
-                    fetchCSV('GAME ONLINE.csv', 'ONLINE')
-                ]);
-
-                ALL_GAMES = [...offlineData, ...onlineData];
-                renderGames();
-            } catch (error) {
-                console.error("Lỗi đọc CSV:", error);
-                document.getElementById('gameGrid').innerHTML = '<div class="col-span-full text-center py-10 text-red-400 text-sm">Không thể tải dữ liệu CSV!</div>';
-            }
-        }
-
-        function fetchCSV(filePath, typeTag) {
-            return new Promise((resolve) => {
-                Papa.parse(filePath, {
-                    download: true,
-                    header: true,
-                    skipEmptyLines: true,
-                    complete: function(results) {
-                        const formatted = results.data.map((item, index) => {
-                            const keys = Object.keys(item);
-                            
-                            let name = item["Title"] || item["title"] || item["Tên Game"] || "";
-                            let size = item["Dung Lượng"] || item["Dung lượng"] || item["Size"] || "N/A";
-                            let status = item["Status"] || item["Trạng Thái"] || "Hoạt động";
-                            let updated = item["Cập Nhật Lần Cuối"] || "Mới nhất";
-                            let image = item["Poster"] || item["Ảnh"] || item["Image"] || "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800";
-                            let link = item["Link"] || item["Link Tải"] || item["Download"] || "#";
-
-                            if (!name) {
-                                keys.forEach(key => {
-                                    const lKey = key.toLowerCase();
-                                    if (!name && (lKey.includes('title') || lKey.includes('tên') || key === keys[0])) {
-                                        name = item[key];
-                                    }
-                                });
-                            }
-
-                            return {
-                                id: `${typeTag}-${index}`,
-                                name: name ? name.trim() : "Game Chưa Đặt Tên",
-                                type: typeTag,
-                                size: size.toString().toLowerCase().includes('gb') ? size : (size !== "N/A" ? size + ' GB' : 'N/A'),
-                                status: status,
-                                updated: updated,
-                                image: (image && image.startsWith('http')) ? image : "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800",
-                                link: (link && link.startsWith('http')) ? link : "#"
-                            };
-                        });
-                        resolve(formatted.filter(g => g.name && g.name.trim() !== ""));
-                    },
-                    error: function(err) {
-                        console.warn(`Lỗi PapaParse file ${filePath}:`, err);
-                        resolve([]);
-                    }
-                });
-            });
-        }
-
-        window.onload = function() {
-            loadAllCSVData();
-        };
-
-        function filterType(type) {
-            currentFilter = type;
-            ['ALL', 'OFFLINE', 'ONLINE'].forEach(t => {
-                const btn = document.getElementById(`nav-${t}`);
-                if(btn) {
-                    if(t === type) {
-                        btn.className = "px-4 py-2 rounded-xl text-xs md:text-sm font-semibold bg-violet-600 text-white transition-all shadow-md";
-                    } else {
-                        btn.className = "px-4 py-2 rounded-xl text-xs md:text-sm font-semibold text-gray-300 hover:bg-gray-800 transition-all";
-                    }
-                }
-            });
-            renderGames();
-        }
-
-        function handleSearch() {
-            searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
-            renderGames();
-        }
-
-        function handleSearchMobile() {
-            searchQuery = document.getElementById('searchInputMobile').value.toLowerCase().trim();
-            renderGames();
-        }
-
-        function renderGames() {
-            const grid = document.getElementById('gameGrid');
-            grid.innerHTML = '';
-
-            const filtered = ALL_GAMES.filter(g => {
-                const matchType = (currentFilter === 'ALL' || g.type === currentFilter);
-                const matchSearch = g.name.toLowerCase().includes(searchQuery);
-                return matchType && matchSearch;
-            });
-
-            document.getElementById('gameCountBadge').innerText = `${filtered.length} Game`;
-
-            if(filtered.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-16 text-gray-400 text-sm">Không tìm thấy game nào!</div>';
-                return;
-            }
-
-            filtered.forEach(game => {
-                const badgeColor = game.type === 'OFFLINE' ? 'bg-amber-500 text-black' : 'bg-cyan-500 text-black';
-                grid.innerHTML += `
-                    <div class="bg-gray-900 border border-gray-800/80 rounded-2xl overflow-hidden shadow-lg card-hover flex flex-col cursor-pointer group" onclick="openModal('${game.id}')">
-                        <div class="relative w-full poster-aspect bg-gray-950 overflow-hidden">
-                            <img src="${game.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800'">
-                            <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold ${badgeColor}">${game.type}</span>
-                            <span class="absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold bg-black/70 text-amber-300">${game.size}</span>
-                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <div class="w-12 h-12 rounded-full bg-violet-600 text-white flex items-center justify-center text-base shadow-xl">
-                                    <i class="fa-solid fa-play ml-0.5"></i>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="p-3.5 flex flex-col justify-between flex-grow">
-                            <h3 class="font-bold text-xs md:text-sm text-gray-100 line-clamp-1 group-hover:text-violet-400 transition-colors">${game.name}</h3>
-                            <button class="mt-3 w-full py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition-colors shadow-md">
-                                <i class="fa-solid fa-download mr-1.5"></i> Tải ngay
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
-        }
-
-        function openModal(id) {
-            const game = ALL_GAMES.find(g => g.id === id);
-            if(!game) return;
-            document.getElementById('modalTitle').innerText = game.name;
-            document.getElementById('modalPoster').src = game.image;
-            document.getElementById('modalType').innerText = `Phân loại: Game ${game.type}`;
-            document.getElementById('modalSize').innerText = `Dung lượng: ${game.size}`;
-            document.getElementById('modalStatus').innerText = `Trạng thái: ${game.status}`;
-            document.getElementById('modalUpdated').innerText = `Cập nhật: ${game.updated}`;
-            document.getElementById('modalDownloadBtn').href = game.link;
-            document.getElementById('gameModal').classList.remove('hidden');
-        }
-
-        function closeModal() {
-            document.getElementById('gameModal').classList.add('hidden');
-        }
-    </script>
-</body>
-</html>
+            <!-- Danh sách card chạy ngang bên phải -->
+            <div class="relative flex-grow w-full overflow-hidden group">
+                <button onclick="scrollRow('offlineRow', -300)" class="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-9 h-9 rounded-full bg-black/70 text-white opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center hover:bg-violet-600">
+                    <i class="fa-solid fa-chevron-left text-xs"></i>
+                </button>
+                <div id="offlineRow" class="flex gap-4 overflow-x-auto no-scrollbar scroll
