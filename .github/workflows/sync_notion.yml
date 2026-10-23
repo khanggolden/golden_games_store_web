@@ -2,8 +2,8 @@ name: Auto Sync Notion Database
 
 on:
   schedule:
-    - cron: '0 */3 * * *' # Tự động chạy ngầm mỗi 3 tiếng một lần
-  workflow_dispatch: # Cho phép bấm nút chạy thủ công bất cứ lúc nào trên GitHub
+    - cron: '0 */3 * * *'
+  workflow_dispatch:
 
 jobs:
   sync:
@@ -13,7 +13,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: setup-python@v5
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
 
