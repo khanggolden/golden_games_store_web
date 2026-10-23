@@ -2,9 +2,10 @@ import os
 import requests
 import pandas as pd
 
-NOTION_TOKEN = os.environ.get("NOTION_API_TOKEN")
-OFFLINE_DB_ID = os.environ.get("NOTION_OFFLINE_DB_ID")
-ONLINE_DB_ID = os.environ.get("NOTION_ONLINE_DB_ID")
+# Điền trực tiếp thông tin vào đây để loại bỏ lỗi truyền biến môi trường trên GitHub
+NOTION_TOKEN = "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"
+OFFLINE_DB_ID = "1c282f39348181bab9ead47aae938e2b"
+ONLINE_DB_ID = "1c282f393481800ab574d6b5bef982c0"
 
 headers = {
     "Authorization": f"Bearer {NOTION_TOKEN}",
