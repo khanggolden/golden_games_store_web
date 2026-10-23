@@ -17,65 +17,157 @@
     </style>
 </head>
 <body class="min-h-screen flex flex-col selection:bg-violet-600 selection:text-white">
+
+    <!-- HEADER -->
     <header class="sticky top-0 z-40 bg-gray-950/90 backdrop-blur-md border-b border-gray-800">
-        <div class="max-w-7xl mx-auto px-4 h-16 flex items-center justify-between">
-            <span class="font-extrabold text-lg text-amber-400">KHANG GOLDEN GAMES STORE</span>
-            <div class="flex gap-2">
-                <button onclick="filterType('ALL')" class="px-3 py-1.5 rounded-lg bg-violet-600 text-white text-xs font-semibold">Tất cả</button>
-                <button onclick="filterType('OFFLINE')" class="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 text-xs font-semibold">Offline</button>
-                <button onclick="filterType('ONLINE')" class="px-3 py-1.5 rounded-lg bg-gray-800 text-gray-300 text-xs font-semibold">Online</button>
+        <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
+            <a href="#" onclick="filterType('ALL'); return false;" class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 to-violet-600 flex items-center justify-center text-white text-xl">
+                    <i class="fa-solid fa-gamepad"></i>
+                </div>
+                <div>
+                    <span class="font-extrabold text-lg text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-cyan-400">KHANG GOLDEN</span>
+                    <span class="block text-[10px] text-gray-400 tracking-widest uppercase">GAMES STORE</span>
+                </div>
+            </a>
+            <div class="flex items-center gap-2">
+                <button onclick="filterType('ALL')" id="nav-ALL" class="px-4 py-2 rounded-xl text-sm font-semibold bg-violet-600 text-white">Tất Cả</button>
+                <button onclick="filterType('OFFLINE')" id="nav-OFFLINE" class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:bg-gray-800">Offline</button>
+                <button onclick="filterType('ONLINE')" id="nav-ONLINE" class="px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:bg-gray-800">Online</button>
             </div>
         </div>
     </header>
+
+    <!-- MAIN CONTENT -->
     <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
+        <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
+            <h2 class="text-xl font-bold text-white">Danh Sách Game Từ Notion</h2>
+            <span id="gameCountBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-800 text-gray-400">0 Game</span>
+        </div>
+
         <div id="gameGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            <div class="col-span-full text-center py-20 text-amber-400"><i class="fa-solid fa-spinner fa-spin text-2xl mb-2"></i><p>Đang tải danh sách game...</p></div>
+            <div class="col-span-full text-center py-20 text-amber-400">
+                <i class="fa-solid fa-spinner fa-spin text-3xl mb-3"></i>
+                <p class="font-bold">Đang kết nối và đồng bộ dữ liệu từ Notion...</p>
+            </div>
         </div>
     </main>
+
+    <!-- MODAL CHI TIẾT -->
+    <div id="gameModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="relative w-full max-w-lg bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-4">
+            <div class="flex justify-between items-center">
+                <h3 id="modalTitle" class="text-xl font-bold text-white">Tên Game</h3>
+                <button onclick="closeModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+            <p id="modalSize" class="text-xs text-amber-400 font-semibold">Dung lượng: --</p>
+            <a id="modalDownloadBtn" href="#" target="_blank" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-center block shadow-lg">
+                <i class="fa-solid fa-download mr-2"></i> TẢI NGAY TỐC ĐỘ CAO
+            </a>
+        </div>
+    </div>
+
+    <!-- SCRIPT KẾT NỐI NOTION API -->
     <script>
-        let GAMES = [];
+        // CẤU HÌNH NOTION CỦA ANH
+        const NOTION_TOKEN = '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';
+        const DATABASE_ID = '1c282f39348180b0bd13d6d7c719b83f';
+
+        let RAW_GAMES_DATABASE = [];
         let currentFilter = 'ALL';
 
-        async function loadGames() {
+        async function fetchGamesFromNotion() {
             try {
-                // Tải file games.json tự động cập nhật từ GitHub
-                const res = await fetch('games.json?' + new Date().getTime());
-                GAMES = await res.json();
-                renderGames();
-            } catch (e) {
-                console.error(e);
+                const proxyUrl = 'https://corsproxy.io/?';
+                const notionUrl = `https://api.notion.com/v1/databases/${DATABASE_ID}/query`;
+
+                const response = await fetch(proxyUrl + encodeURIComponent(notionUrl), {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${NOTION_TOKEN}`,
+                        'Notion-Version': '2022-06-28',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                const data = await response.json();
+                if(!data.results) return [];
+
+                return data.results.map((item, index) => {
+                    const props = item.properties;
+                    const title = props.Title?.title[0]?.plain_text || "Game Chưa Đặt Tên";
+                    const type = props.Type?.select?.name || props.Type?.status?.name || "OFFLINE";
+                    const size = props.Size?.number ? `${props.Size.number} GB` : (props.Dung?.number ? `${props.Dung.number} GB` : "N/A");
+                    const image = props.Image?.url || "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800";
+                    const link = props.Link?.url || "#";
+
+                    return { id: index + 1, name: title, type: type.toUpperCase(), size: size, image: image, link: link };
+                });
+            } catch (error) {
+                console.error("Lỗi kết nối Notion:", error);
+                return [];
             }
         }
 
+        window.onload = async function() {
+            RAW_GAMES_DATABASE = await fetchGamesFromNotion();
+            renderGames();
+        };
+
         function filterType(type) {
             currentFilter = type;
+            ['ALL', 'OFFLINE', 'ONLINE'].forEach(t => {
+                const btn = document.getElementById(`nav-${t}`);
+                if(btn) {
+                    btn.className = t === type ? "px-4 py-2 rounded-xl text-sm font-semibold bg-violet-600 text-white" : "px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:bg-gray-800";
+                }
+            });
             renderGames();
         }
 
         function renderGames() {
             const grid = document.getElementById('gameGrid');
             grid.innerHTML = '';
-            const filtered = GAMES.filter(g => currentFilter === 'ALL' || g.type === currentFilter);
-            
+
+            const filtered = RAW_GAMES_DATABASE.filter(g => currentFilter === 'ALL' || g.type.includes(currentFilter));
+            document.getElementById('gameCountBadge').innerText = `${filtered.length} Game`;
+
+            if(filtered.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">Chưa có game nào trong Notion hoặc chưa cấp quyền kết nối!</div>';
+                return;
+            }
+
             filtered.forEach(game => {
                 grid.innerHTML += `
-                    <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden shadow-lg card-hover-glow flex flex-col">
+                    <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-lg card-hover-glow flex flex-col cursor-pointer" onclick="openModal(${game.id})">
                         <div class="relative w-full poster-aspect bg-gray-950 overflow-hidden">
-                            <img src="${game.image}" class="w-full h-full object-cover">
-                            <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold ${game.type === 'ONLINE' ? 'bg-cyan-600' : 'bg-amber-600'} text-white">${game.type}</span>
+                            <img src="${game.image}" class="w-full h-full object-cover" loading="lazy">
+                            <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold ${game.type.includes('ONLINE') ? 'bg-cyan-600' : 'bg-amber-600'} text-white">${game.type}</span>
                             <span class="absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold bg-black/70 text-amber-300">${game.size}</span>
                         </div>
                         <div class="p-3 flex flex-col justify-between flex-grow">
                             <h3 class="font-bold text-sm text-gray-100 line-clamp-1">${game.name}</h3>
-                            <a href="${game.link}" target="_blank" class="mt-2 w-full py-1.5 rounded bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold text-center block">
+                            <button class="mt-2 w-full py-1.5 rounded-lg bg-violet-600 text-white text-xs font-bold">
                                 <i class="fa-solid fa-download mr-1"></i> Tải ngay
-                            </a>
+                            </button>
                         </div>
                     </div>
                 `;
             });
         }
-        window.onload = loadGames;
+
+        function openModal(id) {
+            const game = RAW_GAMES_DATABASE.find(g => g.id === id);
+            if(!game) return;
+            document.getElementById('modalTitle').innerText = game.name;
+            document.getElementById('modalSize').innerText = `Dung lượng: ${game.size}`;
+            document.getElementById('modalDownloadBtn').href = game.link;
+            document.getElementById('gameModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('gameModal').classList.add('hidden');
+        }
     </script>
 </body>
 </html>
