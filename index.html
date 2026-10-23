@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Thư viện đọc file CSV nhanh chóng -->
+    <!-- Thư viện đọc file CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #f3f4f6; }
@@ -75,7 +75,6 @@
         let ALL_GAMES = [];
         let currentFilter = 'ALL';
 
-        // Đọc đồng thời 2 file CSV (Offline và Online)
         async function loadAllCSVData() {
             try {
                 const [offlineData, onlineData] = await Promise.all([
@@ -87,7 +86,7 @@
                 renderGames();
             } catch (error) {
                 console.error("Lỗi tải file CSV:", error);
-                document.getElementById('gameGrid').innerHTML = '<div class="col-span-full text-center py-10 text-red-400">Không tìm thấy file CSV! Hãy chắc chắn workflow GitHub Actions đã chạy thành công.</div>';
+                document.getElementById('gameGrid').innerHTML = '<div class="col-span-full text-center py-10 text-red-400">Không tìm thấy file CSV!</div>';
             }
         }
 
@@ -99,24 +98,57 @@
                     skipEmptyLines: true,
                     complete: function(results) {
                         const formatted = results.data.map((item, index) => {
-                            // Tự động tìm các cột phổ biến trong Notion tương ứng
-                            const name = item.Title || item.Name || item.Tên || Object.values(item)[0] || "Game Chưa Đặt Tên";
-                            const size = item["Dung Lượng"] || item.Size || "N/A";
-                            const status = item.Status || item.Trạng_thái || "Success";
-                            const image = item.Image || item.Hình_ảnh || "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800";
-                            const link = item.Link || item.URL || "#";
+                            const keys = Object.keys(item);
+                            
+                            let name = "";
+                            let size = "N/A";
+                            let status = "Success";
+                            let image = "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800";
+                            let link = "#";
+
+                            keys.forEach(key => {
+                                const lowerKey = key.toLowerCase();
+                                const val = item[key];
+                                if (!val) return;
+
+                                // Nhận diện tên game (cột tiêu đề đầu tiên hoặc chứa từ khóa)
+                                if (!name && (lowerKey.includes('tên') || lowerKey.includes('title') || lowerKey.includes('name') || lowerKey === keys[0])) {
+                                    name = val;
+                                }
+                                // Nhận diện dung lượng
+                                if (lowerKey.includes('dung') || lowerKey.includes('size') || lowerKey.includes('gb')) {
+                                    size = val;
+                                }
+                                // Nhận diện trạng thái
+                                if (lowerKey.includes('trạng') || lowerKey.includes('status')) {
+                                    status = val;
+                                }
+                                // Nhận diện hình ảnh
+                                if (lowerKey.includes('ảnh') || lowerKey.includes('image') || lowerKey.includes('img') || (val.startsWith('http') && val.match(/\.(jpeg|jpg|gif|png)$/))) {
+                                    image = val;
+                                }
+                                // Nhận diện link tải
+                                if (lowerKey.includes('link') || lowerKey.includes('fshare') || lowerKey.includes('tải') || (val.startsWith('http') && !val.includes('unsplash'))) {
+                                    link = val;
+                                }
+                            });
+
+                            // Fallback nếu không khớp từ khóa thì lấy cột đầu tiên làm tên
+                            if (!name && keys.length > 0) {
+                                name = item[keys[0]] || "Game Chưa Đặt Tên";
+                            }
 
                             return {
                                 id: `${typeTag}-${index}`,
                                 name: name,
                                 type: typeTag,
-                                size: size.includes('GB') ? size : (size ? size + ' GB' : 'N/A'),
+                                size: size.toString().toLowerCase().includes('gb') ? size : (size !== "N/A" ? size + ' GB' : 'N/A'),
                                 status: status,
                                 image: image,
                                 link: link
                             };
                         });
-                        resolve(formatted);
+                        resolve(formatted.filter(g => g.name && g.name.trim() !== ""));
                     },
                     error: function(err) {
                         console.warn(`Không đọc được file ${filePath}:`, err);
@@ -133,7 +165,6 @@
         function filterType(type) {
             currentFilter = type;
             
-            // Đổi màu style nút bấm menu
             ['ALL', 'OFFLINE', 'ONLINE'].forEach(t => {
                 const btn = document.getElementById(`nav-${t}`);
                 if(t === type) {
