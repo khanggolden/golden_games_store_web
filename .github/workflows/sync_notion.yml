@@ -2,14 +2,14 @@ name: Auto Sync Notion Database
 
 on:
   schedule:
-    - cron: '0 */3 * * *'  # Runs at 0 minutes past the hour, every 3 hours
+    - cron: '0 */3 * * *'
   workflow_dispatch:
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # Cấp quyền ghi thẳng vào repo cho Actions
+      contents: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -21,7 +21,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install notion-client requests pandas
+          pip install requests pandas
 
       - name: Run Sync Script
         env:
