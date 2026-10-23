@@ -2,9 +2,9 @@ import os
 import csv
 import requests
 
-# Lấy token từ GitHub Secrets
 NOTION_TOKEN = os.getenv("NOTION_TOKEN")
 
+# Sử dụng lại đúng 2 Database ID của anh
 DATABASE_OFFLINE_ID = "1c282f39-3481-8194-a23d-000b0e4c89b4"
 DATABASE_ONLINE_ID = "1c282f39-3481-81c7-9acc-000bea275dd5"
 
@@ -25,12 +25,12 @@ def fetch_and_write_csv(database_id, filename):
         payload = {}
         if start_cursor:
             payload["start_cursor"] = start_cursor
-        
+
         response = requests.post(url, headers=HEADERS, json=payload)
         if response.status_code != 200:
             print(f"Lỗi khi gọi API Notion: {response.status_code} - {response.text}")
             return
-            
+
         data = response.json()
         results.extend(data.get("results", []))
         has_more = data.get("has_more", False)
@@ -40,11 +40,9 @@ def fetch_and_write_csv(database_id, filename):
         print(f"Cảnh báo: Không tìm thấy dòng nào trong {filename}!")
         return
 
-    # Lấy tiêu đề các cột
     first_page = results[0]["properties"]
     headers = list(first_page.keys())
 
-    # Đưa cột Tên/Title lên đầu nếu có
     title_headers = [h for h, v in first_page.items() if v["type"] == "title"]
     if title_headers:
         main_title = title_headers[0]
@@ -89,7 +87,6 @@ def fetch_and_write_csv(database_id, filename):
             row[header] = val
         rows.append(row)
 
-    # Ghi ra file CSV chuẩn tiếng Việt
     with open(filename, mode="w", newline="", encoding="utf-8-sig") as f:
         writer = csv.DictWriter(f, fieldnames=headers)
         writer.writeheader()
