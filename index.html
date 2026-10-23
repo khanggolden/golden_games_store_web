@@ -7,7 +7,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <!-- Thư viện PapaParse đọc file CSV -->
+    <!-- Thư viện đọc file CSV -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
     <style>
         body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #f3f4f6; }
@@ -24,7 +24,6 @@
     <!-- HEADER / NAVBAR -->
     <header class="sticky top-0 z-40 bg-gray-950/90 backdrop-blur-md border-b border-gray-800/80">
         <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between gap-4">
-            <!-- LOGO -->
             <a href="#" onclick="filterType('ALL'); return false;" class="flex items-center gap-3 shrink-0">
                 <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-amber-500 to-violet-600 flex items-center justify-center text-white text-xl shadow-lg">
                     <i class="fa-solid fa-gamepad"></i>
@@ -45,7 +44,6 @@
                 </div>
             </div>
 
-            <!-- NAVIGATION BUTTONS -->
             <div class="flex items-center gap-2 shrink-0">
                 <button onclick="filterType('ALL')" id="nav-ALL" class="px-4 py-2 rounded-xl text-xs md:text-sm font-semibold bg-violet-600 text-white transition-all shadow-md">Tất cả</button>
                 <button onclick="filterType('OFFLINE')" id="nav-OFFLINE" class="px-4 py-2 rounded-xl text-xs md:text-sm font-semibold text-gray-300 hover:bg-gray-800 transition-all">Offline</button>
@@ -54,7 +52,7 @@
         </div>
     </header>
 
-    <!-- HERO BANNER (ROPHIM STYLE) -->
+    <!-- HERO BANNER -->
     <section class="relative w-full h-[380px] md:h-[460px] bg-gray-900 overflow-hidden">
         <img src="https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1600" class="w-full h-full object-cover filter brightness-75" alt="Hero Banner">
         <div class="absolute inset-0 hero-gradient flex items-end">
@@ -65,7 +63,7 @@
                         <span class="text-xs text-amber-300 font-medium"><i class="fa-solid fa-fire mr-1"></i> Kho game cập nhật 2026</span>
                     </div>
                     <h1 class="text-3xl md:text-5xl font-black text-white tracking-tight">KHANG GOLDEN QUEST</h1>
-                    <p class="text-xs md:text-sm text-gray-300 line-clamp-2">Khám phá kho tàng game Offline & Online đỉnh cao, tốc độ tải siêu tốc, tự động đồng bộ từ Notion.</p>
+                    <p class="text-xs md:text-sm text-gray-300 line-clamp-2">Khám phá kho tàng game Offline & Online đỉnh cao, tốc độ tải siêu tốc, giao diện điện ảnh mượt mà.</p>
                 </div>
             </div>
         </div>
@@ -73,7 +71,6 @@
 
     <!-- MAIN CONTENT -->
     <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
-        <!-- SEARCH BAR FOR MOBILE -->
         <div class="mb-6 md:hidden">
             <div class="relative">
                 <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-gray-400">
@@ -94,12 +91,12 @@
         <div id="gameGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 md:gap-6">
             <div class="col-span-full text-center py-20 text-violet-400">
                 <i class="fa-solid fa-spinner fa-spin text-3xl mb-3"></i>
-                <p class="font-bold text-sm">Đang tải dữ liệu từ CSV...</p>
+                <p class="font-bold text-sm">Đang tải dữ liệu trực tiếp từ GitHub...</p>
             </div>
         </div>
     </main>
 
-    <!-- MODAL XEM CHI TIẾT GAME -->
+    <!-- MODAL -->
     <div id="gameModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
         <div class="relative w-full max-w-lg bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-4 shadow-2xl">
             <div class="flex justify-between items-center border-b border-gray-800 pb-3">
@@ -127,13 +124,163 @@
         <p>&copy; 2026 Khang Golden - Golden Games Store. All rights reserved.</p>
     </footer>
 
-    <!-- SCRIPT ĐỌC VÀ XỬ LÝ CSV -->
+    <!-- SCRIPT ĐỌC TRỰC TIẾP 2 FILE CSV TRÊN GITHUB -->
     <script>
         let ALL_GAMES = [];
         let currentFilter = 'ALL';
         let searchQuery = '';
 
+        // Đổi tên đường dẫn dưới đây thành tên tài khoản GitHub và Repo của anh nếu cần,
+        // hiện tại đang dùng đường dẫn tương đối trỏ trực tiếp đến 2 file CSV cùng thư mục.
         async function loadAllCSVData() {
             try {
                 const [offlineData, onlineData] = await Promise.all([
                     fetchCSV('GAME OFFLINE.csv', 'OFFLINE'),
+                    fetchCSV('GAME ONLINE.csv', 'ONLINE')
+                ]);
+
+                ALL_GAMES = [...offlineData, ...onlineData];
+                renderGames();
+            } catch (error) {
+                console.error("Lỗi đọc CSV:", error);
+                document.getElementById('gameGrid').innerHTML = '<div class="col-span-full text-center py-10 text-red-400 text-sm">Không thể tải dữ liệu CSV!</div>';
+            }
+        }
+
+        function fetchCSV(filePath, typeTag) {
+            return new Promise((resolve) => {
+                Papa.parse(filePath, {
+                    download: true,
+                    header: true,
+                    skipEmptyLines: true,
+                    complete: function(results) {
+                        const formatted = results.data.map((item, index) => {
+                            const keys = Object.keys(item);
+                            
+                            let name = item["Title"] || item["title"] || item["Tên Game"] || "";
+                            let size = item["Dung Lượng"] || item["Dung lượng"] || item["Size"] || "N/A";
+                            let status = item["Status"] || item["Trạng Thái"] || "Hoạt động";
+                            let updated = item["Cập Nhật Lần Cuối"] || "Mới nhất";
+                            let image = item["Poster"] || item["Ảnh"] || item["Image"] || "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800";
+                            let link = item["Link"] || item["Link Tải"] || item["Download"] || "#";
+
+                            if (!name) {
+                                keys.forEach(key => {
+                                    const lKey = key.toLowerCase();
+                                    if (!name && (lKey.includes('title') || lKey.includes('tên') || key === keys[0])) {
+                                        name = item[key];
+                                    }
+                                });
+                            }
+
+                            return {
+                                id: `${typeTag}-${index}`,
+                                name: name ? name.trim() : "Game Chưa Đặt Tên",
+                                type: typeTag,
+                                size: size.toString().toLowerCase().includes('gb') ? size : (size !== "N/A" ? size + ' GB' : 'N/A'),
+                                status: status,
+                                updated: updated,
+                                image: (image && image.startsWith('http')) ? image : "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800",
+                                link: (link && link.startsWith('http')) ? link : "#"
+                            };
+                        });
+                        resolve(formatted.filter(g => g.name && g.name.trim() !== ""));
+                    },
+                    error: function(err) {
+                        console.warn(`Lỗi PapaParse file ${filePath}:`, err);
+                        resolve([]);
+                    }
+                });
+            });
+        }
+
+        window.onload = function() {
+            loadAllCSVData();
+        };
+
+        function filterType(type) {
+            currentFilter = type;
+            ['ALL', 'OFFLINE', 'ONLINE'].forEach(t => {
+                const btn = document.getElementById(`nav-${t}`);
+                if(btn) {
+                    if(t === type) {
+                        btn.className = "px-4 py-2 rounded-xl text-xs md:text-sm font-semibold bg-violet-600 text-white transition-all shadow-md";
+                    } else {
+                        btn.className = "px-4 py-2 rounded-xl text-xs md:text-sm font-semibold text-gray-300 hover:bg-gray-800 transition-all";
+                    }
+                }
+            });
+            renderGames();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value.toLowerCase().trim();
+            renderGames();
+        }
+
+        function handleSearchMobile() {
+            searchQuery = document.getElementById('searchInputMobile').value.toLowerCase().trim();
+            renderGames();
+        }
+
+        function renderGames() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+
+            const filtered = ALL_GAMES.filter(g => {
+                const matchType = (currentFilter === 'ALL' || g.type === currentFilter);
+                const matchSearch = g.name.toLowerCase().includes(searchQuery);
+                return matchType && matchSearch;
+            });
+
+            document.getElementById('gameCountBadge').innerText = `${filtered.length} Game`;
+
+            if(filtered.length === 0) {
+                grid.innerHTML = '<div class="col-span-full text-center py-16 text-gray-400 text-sm">Không tìm thấy game nào!</div>';
+                return;
+            }
+
+            filtered.forEach(game => {
+                const badgeColor = game.type === 'OFFLINE' ? 'bg-amber-500 text-black' : 'bg-cyan-500 text-black';
+                grid.innerHTML += `
+                    <div class="bg-gray-900 border border-gray-800/80 rounded-2xl overflow-hidden shadow-lg card-hover flex flex-col cursor-pointer group" onclick="openModal('${game.id}')">
+                        <div class="relative w-full poster-aspect bg-gray-950 overflow-hidden">
+                            <img src="${game.image}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800'">
+                            <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold ${badgeColor}">${game.type}</span>
+                            <span class="absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold bg-black/70 text-amber-300">${game.size}</span>
+                            <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                                <div class="w-12 h-12 rounded-full bg-violet-600 text-white flex items-center justify-center text-base shadow-xl">
+                                    <i class="fa-solid fa-play ml-0.5"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3.5 flex flex-col justify-between flex-grow">
+                            <h3 class="font-bold text-xs md:text-sm text-gray-100 line-clamp-1 group-hover:text-violet-400 transition-colors">${game.name}</h3>
+                            <button class="mt-3 w-full py-2 rounded-xl bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold transition-colors shadow-md">
+                                <i class="fa-solid fa-download mr-1.5"></i> Tải ngay
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function openModal(id) {
+            const game = ALL_GAMES.find(g => g.id === id);
+            if(!game) return;
+            document.getElementById('modalTitle').innerText = game.name;
+            document.getElementById('modalPoster').src = game.image;
+            document.getElementById('modalType').innerText = `Phân loại: Game ${game.type}`;
+            document.getElementById('modalSize').innerText = `Dung lượng: ${game.size}`;
+            document.getElementById('modalStatus').innerText = `Trạng thái: ${game.status}`;
+            document.getElementById('modalUpdated').innerText = `Cập nhật: ${game.updated}`;
+            document.getElementById('modalDownloadBtn').href = game.link;
+            document.getElementById('gameModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('gameModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
