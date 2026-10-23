@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Golden Games Store - Tải Game Online & Offline Vietsub Hay Nhất</title>
+    <title>Golden Games Store - Khang Golden</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -20,28 +20,18 @@
                             cardBg: '#111827',
                             border: '#1f2937'
                         }
-                    },
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
                     }
                 }
             }
         }
     </script>
-    <!-- FontAwesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #0b0f19;
-            color: #f3f4f6;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: #0b0f19; color: #f3f4f6; }
         ::-webkit-scrollbar { width: 8px; height: 8px; }
         ::-webkit-scrollbar-track { background: #0b0f19; }
         ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
         .poster-aspect { aspect-ratio: 2 / 3; }
         .card-hover-glow:hover {
             box-shadow: 0 0 20px rgba(139, 92, 246, 0.35);
@@ -51,16 +41,14 @@
 </head>
 <body class="min-h-screen flex flex-col selection:bg-violet-600 selection:text-white">
 
-    <!-- HEADER / NAVIGATION -->
-    <header class="sticky top-0 z-40 bg-brand-darkBg/90 backdrop-blur-md border-b border-gray-800/80 transition-all duration-300">
+    <!-- HEADER -->
+    <header class="sticky top-0 z-40 bg-brand-darkBg/90 backdrop-blur-md border-b border-gray-800/80">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-16 sm:h-20 gap-4">
-                
-                <!-- Logo -->
                 <a href="#" onclick="filterType('ALL'); return false;" class="flex items-center gap-3 group shrink-0">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-violet-600 to-cyan-400 p-0.5 shadow-lg shadow-violet-500/20 group-hover:shadow-violet-500/40 transition-all">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-violet-600 to-cyan-400 p-0.5 shadow-lg shadow-violet-500/20">
                         <div class="w-full h-full bg-brand-darkBg rounded-[10px] flex items-center justify-center">
-                            <i class="fa-solid fa-gamepad text-amber-400 text-xl group-hover:scale-110 transition-transform"></i>
+                            <i class="fa-solid fa-gamepad text-amber-400 text-xl"></i>
                         </div>
                     </div>
                     <div class="flex flex-col">
@@ -71,9 +59,194 @@
                     </div>
                 </a>
 
-                <!-- Desktop Nav Categories -->
-                <nav class="hidden md:flex items-center gap-1 lg:gap-2">
+                <nav class="hidden md:flex items-center gap-2">
                     <button onclick="filterType('ALL')" id="nav-ALL" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-violet-600 text-white shadow-lg shadow-violet-600/30">
                         <i class="fa-solid fa-border-all mr-1.5"></i> Tất Cả
                     </button>
-                    <button onclick="filterType('OFFLINE')" id="nav-OFFLINE" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:
+                    <button onclick="filterType('OFFLINE')" id="nav-OFFLINE" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white hover:bg-gray-800 transition-all">
+                        <i class="fa-solid fa-wifi-slash mr-1.5 text-amber-400"></i> Game Offline
+                    </button>
+                    <button onclick="filterType('ONLINE')" id="nav-ONLINE" class="nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white hover:bg-gray-800 transition-all">
+                        <i class="fa-solid fa-globe mr-1.5 text-cyan-400"></i> Game Online
+                    </button>
+                </nav>
+
+                <div class="flex items-center gap-3 flex-1 md:flex-none justify-end">
+                    <div class="relative w-full max-w-xs">
+                        <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Tìm tên game..." 
+                            class="w-full bg-gray-900/90 text-sm text-gray-200 placeholder-gray-500 rounded-full py-2 pl-10 pr-8 border border-gray-700/80 focus:outline-none focus:border-violet-500 transition-all">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-500 text-xs"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-grow pb-16">
+        <!-- HERO BANNER -->
+        <section class="relative w-full overflow-hidden bg-gray-950 mb-8 border-b border-gray-800/60">
+            <div id="heroContainer" class="relative min-h-[380px] sm:min-h-[460px] md:min-h-[520px] flex items-end transition-all duration-700 bg-cover bg-center" style="background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=1200');">
+                <div class="absolute inset-0 bg-gradient-to-t from-brand-darkBg via-brand-darkBg/60 to-transparent"></div>
+                <div class="absolute inset-0 bg-gradient-to-r from-brand-darkBg via-brand-darkBg/70 to-transparent"></div>
+
+                <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 w-full z-10 flex flex-col items-start gap-3 sm:gap-4">
+                    <div class="flex items-center gap-2">
+                        <span id="heroBadgeType" class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-amber-500/20 text-amber-400 border border-amber-500/40">OFFLINE GAME</span>
+                        <span id="heroBadgeSize" class="px-3 py-1 rounded-full text-xs font-bold uppercase bg-violet-500/20 text-violet-300 border border-violet-500/40">28 GB</span>
+                    </div>
+                    <h1 id="heroTitle" class="text-2xl sm:text-4xl md:text-5xl font-black text-white tracking-tight leading-tight max-w-2xl">Lies of P Deluxe Edition</h1>
+                    <p id="heroDesc" class="text-xs sm:text-sm text-gray-300 max-w-xl line-clamp-2">Kho game tổng hợp chính thức của Khang Golden Store. Tải tốc độ cao miễn phí.</p>
+                    <div class="flex items-center gap-3 pt-2">
+                        <button id="heroDownloadBtn" onclick="openModal(1)" class="px-6 py-3 rounded-xl bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 text-white font-bold text-sm shadow-lg shadow-violet-600/40 flex items-center gap-2 transition-all">
+                            <i class="fa-solid fa-download"></i> TẢI VỀ NGAY
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONTAINER -->
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6 pb-4 border-b border-gray-800/80">
+                <div class="flex items-center gap-3">
+                    <div class="w-2 h-7 bg-gradient-to-b from-amber-400 to-violet-600 rounded-full"></div>
+                    <h2 id="sectionTitle" class="text-xl sm:text-2xl font-bold text-white tracking-wide">Danh Sách Kho Game</h2>
+                    <span id="gameCountBadge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-gray-800 text-gray-400 border border-gray-700">0 Game</span>
+                </div>
+            </div>
+
+            <!-- GAME GRID -->
+            <div id="gameGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3 sm:gap-5"></div>
+        </div>
+    </main>
+
+    <!-- MODAL -->
+    <div id="gameModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-3 sm:p-4 bg-black/80 backdrop-blur-sm">
+        <div class="relative w-full max-w-2xl bg-gray-900 border border-gray-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div id="modalBanner" class="relative h-48 sm:h-56 bg-cover bg-center flex items-end p-4 sm:p-6" style="background-image: url('https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800');">
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/60 to-transparent"></div>
+                <button onclick="closeModal()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-black/60 text-gray-300 hover:text-white flex items-center justify-center z-10"><i class="fa-solid fa-xmark"></i></button>
+                <div class="relative z-10 flex items-center gap-2">
+                    <span id="modalTypeBadge" class="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase bg-amber-500/20 text-amber-400 border border-amber-500/40">OFFLINE</span>
+                    <span id="modalSizeBadge" class="px-2.5 py-1 rounded-md text-[11px] font-bold uppercase bg-violet-500/20 text-violet-300 border border-violet-500/40">28 GB</span>
+                </div>
+            </div>
+            <div class="p-4 sm:p-6 overflow-y-auto space-y-4">
+                <h3 id="modalTitle" class="text-xl sm:text-2xl font-black text-white">Tên Game</h3>
+                <div class="grid grid-cols-2 gap-3 bg-gray-950 p-3 rounded-xl border border-gray-800 text-xs">
+                    <div><span class="text-gray-500 block">Dung lượng:</span><span id="modalSize" class="font-semibold text-amber-400">28 GB</span></div>
+                    <div><span class="text-gray-500 block">Trạng thái:</span><span id="modalStatus" class="font-semibold text-emerald-400">Sẵn sàng tải</span></div>
+                </div>
+                <div class="pt-2 border-t border-gray-800">
+                    <a id="modalDownloadBtn" href="https://fshare.vn" target="_blank" class="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 text-white font-bold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-all">
+                        <i class="fa-solid fa-download text-sm"></i> TẢI NGAY (FSHARE / GOOGLE DRIVE)
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT: DỮ LIỆU THỰC TẾ TỪ CSV CỦA ANH -->
+    <script>
+        const RAW_GAMES_DATABASE = [
+            // GAME OFFLINE (Lấy từ file CSV Offline của anh)
+            { id: 1, name: "Stray (2022)", type: "OFFLINE", size: "6 GB", status: "Success", image: "https://images.unsplash.com/photo-1518709268805-4e9042af9f23?q=80&w=800", link: "https://fshare.vn" },
+            { id: 2, name: "Lies of P Deluxe Edition (2023)", type: "OFFLINE", size: "28 GB", status: "Success", image: "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800", link: "https://fshare.vn" },
+            { id: 3, name: "007 First Light (2026)", type: "OFFLINE", size: "43 GB", status: "Success", image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800", link: "https://fshare.vn" },
+            { id: 4, name: "1348 Ex Voto (2026)", type: "OFFLINE", size: "24 GB", status: "Coming", image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800", link: "https://fshare.vn" },
+            { id: 5, name: "God of War Ragnarök", type: "OFFLINE", size: "84 GB", status: "Success", image: "https://images.unsplash.com/photo-1579373903781-fd5c0c30c4cd?q=80&w=800", link: "https://fshare.vn" },
+            { id: 6, name: "Cyberpunk 2077", type: "OFFLINE", size: "70 GB", status: "Success", image: "https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?q=80&w=800", link: "https://fshare.vn" },
+            { id: 7, name: "Black Myth: Wukong", type: "OFFLINE", size: "118 GB", status: "Success", image: "https://images.unsplash.com/photo-1538481199705-c710c4e965fc?q=80&w=800", link: "https://fshare.vn" },
+            { id: 8, name: "Elden Ring: Shadow of the Erdtree", type: "OFFLINE", size: "60 GB", status: "Success", image: "https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=800", link: "https://fshare.vn" },
+            
+            // GAME ONLINE (Lấy từ file CSV Online của anh)
+            { id: 101, name: "A Way Out (2018)", type: "ONLINE", size: "21 GB", status: "Steam", image: "https://images.unsplash.com/photo-1493711662062-fa541adb3fc8?q=80&w=800", link: "https://fshare.vn" },
+            { id: 102, name: "American Truck Simulator (2016)", type: "ONLINE", size: "20 GB", status: "Steam", image: "https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?q=80&w=800", link: "https://fshare.vn" },
+            { id: 103, name: "Palworld", type: "ONLINE", size: "16 GB", status: "Steam", image: "https://images.unsplash.com/photo-1563089145-599997674d42?q=80&w=800", link: "https://fshare.vn" },
+            { id: 104, name: "It Takes Two", type: "ONLINE", size: "50 GB", status: "Steam", image: "https://images.unsplash.com/photo-1534423861386-85a16f5d13fd?q=80&w=800", link: "https://fshare.vn" },
+            { id: 105, name: "Monster Hunter World", type: "ONLINE", size: "52 GB", status: "Steam", image: "https://images.unsplash.com/photo-1578632767115-351597cf2477?q=80&w=800", link: "https://fshare.vn" }
+        ];
+
+        let currentFilter = 'ALL';
+        let searchQuery = '';
+
+        window.onload = function() {
+            renderGames();
+        };
+
+        function filterType(type) {
+            currentFilter = type;
+            ['ALL', 'OFFLINE', 'ONLINE'].forEach(t => {
+                const btn = document.getElementById(`nav-${t}`);
+                if(btn) {
+                    btn.className = t === type ? "nav-btn px-4 py-2 rounded-xl text-sm font-semibold transition-all bg-violet-600 text-white shadow-lg shadow-violet-600/30" : "nav-btn px-4 py-2 rounded-xl text-sm font-semibold text-gray-300 hover:text-white hover:bg-gray-800 transition-all";
+                }
+            });
+            renderGames();
+        }
+
+        function handleSearch() {
+            searchQuery = document.getElementById('searchInput').value.trim().toLowerCase();
+            renderGames();
+        }
+
+        function renderGames() {
+            const grid = document.getElementById('gameGrid');
+            grid.innerHTML = '';
+
+            const filtered = RAW_GAMES_DATABASE.filter(g => {
+                let matchCat = currentFilter === 'ALL' || g.type === currentFilter;
+                let matchSearch = !searchQuery || g.name.toLowerCase().includes(searchQuery);
+                return matchCat && matchSearch;
+            });
+
+            document.getElementById('gameCountBadge').innerText = `${filtered.length} Game`;
+
+            filtered.forEach(game => {
+                const card = `
+                    <div class="group relative bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-lg transition-all card-hover-glow flex flex-col">
+                        <div class="relative w-full poster-aspect overflow-hidden bg-gray-950 cursor-pointer" onclick="openModal(${game.id})">
+                            <img src="${game.image}" alt="${game.name}" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy">
+                            <div class="absolute top-2 left-2 px-2 py-0.5 rounded-md text-[10px] font-bold ${game.type === 'ONLINE' ? 'bg-cyan-600' : 'bg-amber-600'} text-white">
+                                ${game.type}
+                            </div>
+                            <div class="absolute top-2 right-2 px-2 py-0.5 rounded-md text-[10px] font-bold bg-black/70 text-amber-300">
+                                ${game.size}
+                            </div>
+                        </div>
+                        <div class="p-3 flex flex-col justify-between flex-grow">
+                            <h3 class="font-bold text-sm text-gray-100 line-clamp-1">${game.name}</h3>
+                            <div class="mt-2 flex items-center justify-between text-xs">
+                                <span class="text-gray-400">${game.status}</span>
+                                <button onclick="openModal(${game.id})" class="px-3 py-1 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-bold transition-all">
+                                    <i class="fa-solid fa-download"></i> Tải
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += card;
+            });
+        }
+
+        function openModal(id) {
+            const game = RAW_GAMES_DATABASE.find(g => g.id === id);
+            if(!game) return;
+
+            document.getElementById('modalBanner').style.backgroundImage = `url('${game.image}')`;
+            document.getElementById('modalTitle').innerText = game.name;
+            document.getElementById('modalTypeBadge').innerText = game.type;
+            document.getElementById('modalSizeBadge').innerText = game.size;
+            document.getElementById('modalSize').innerText = game.size;
+            document.getElementById('modalStatus').innerText = game.status;
+            document.getElementById('modalDownloadBtn').href = game.link;
+
+            document.getElementById('gameModal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('gameModal').classList.add('hidden');
+        }
+    </script>
+</body>
+</html>
