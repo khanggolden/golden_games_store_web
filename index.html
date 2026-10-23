@@ -41,19 +41,19 @@
     <!-- MAIN CONTENT -->
     <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
         <div class="flex items-center justify-between mb-6 pb-4 border-b border-gray-800">
-            <h2 class="text-xl font-bold text-white">Danh Sách Game Từ Notion</h2>
+            <h2 class="text-xl font-bold text-white">Danh Sách Game Trực Tiếp Từ Notion</h2>
             <span id="gameCountBadge" class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-800 text-gray-400">0 Game</span>
         </div>
 
         <div id="gameGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
             <div class="col-span-full text-center py-20 text-amber-400">
                 <i class="fa-solid fa-spinner fa-spin text-3xl mb-3"></i>
-                <p class="font-bold">Đang kết nối và đồng bộ dữ liệu từ Notion...</p>
+                <p class="font-bold">Đang tải dữ liệu từ Notion Database...</p>
             </div>
         </div>
     </main>
 
-    <!-- MODAL CHI TIẾT -->
+    <!-- MODAL -->
     <div id="gameModal" class="fixed inset-0 z-50 hidden flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
         <div class="relative w-full max-w-lg bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-4">
             <div class="flex justify-between items-center">
@@ -61,15 +61,15 @@
                 <button onclick="closeModal()" class="text-gray-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
             <p id="modalSize" class="text-xs text-amber-400 font-semibold">Dung lượng: --</p>
+            <p id="modalStatus" class="text-xs text-gray-400">Trạng thái: --</p>
             <a id="modalDownloadBtn" href="#" target="_blank" class="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold text-center block shadow-lg">
                 <i class="fa-solid fa-download mr-2"></i> TẢI NGAY TỐC ĐỘ CAO
             </a>
         </div>
     </div>
 
-    <!-- SCRIPT KẾT NỐI NOTION API -->
+    <!-- SCRIPT -->
     <script>
-        // CẤU HÌNH NOTION CỦA ANH
         const NOTION_TOKEN = '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';
         const DATABASE_ID = '1c282f39348180b0bd13d6d7c719b83f';
 
@@ -95,13 +95,22 @@
 
                 return data.results.map((item, index) => {
                     const props = item.properties;
+                    
+                    // Đọc chuẩn theo các cột thực tế từ Notion của anh
                     const title = props.Title?.title[0]?.plain_text || "Game Chưa Đặt Tên";
-                    const type = props.Type?.select?.name || props.Type?.status?.name || "OFFLINE";
-                    const size = props.Size?.number ? `${props.Size.number} GB` : (props.Dung?.number ? `${props.Dung.number} GB` : "N/A");
+                    const statusName = props.Status?.select?.name || props.Status?.status?.name || "Success";
+                    
+                    // Phân loại Offline / Online dựa vào Status hoặc tên
+                    const type = statusName === "Steam" ? "ONLINE" : "OFFLINE";
+                    
+                    // Đọc dung lượng từ cột 'Dung Lượng'
+                    const sizeVal = props["Dung Lượng"]?.number || props.Size?.number || 0;
+                    const size = sizeVal ? `${sizeVal} GB` : "N/A";
+                    
                     const image = props.Image?.url || "https://images.unsplash.com/photo-1542751371-adc38448a05e?q=80&w=800";
-                    const link = props.Link?.url || "#";
+                    const link = props.Link?.url || "https://fshare.vn";
 
-                    return { id: index + 1, name: title, type: type.toUpperCase(), size: size, image: image, link: link };
+                    return { id: index + 1, name: title, type: type, size: size, status: statusName, image: image, link: link };
                 });
             } catch (error) {
                 console.error("Lỗi kết nối Notion:", error);
@@ -129,11 +138,11 @@
             const grid = document.getElementById('gameGrid');
             grid.innerHTML = '';
 
-            const filtered = RAW_GAMES_DATABASE.filter(g => currentFilter === 'ALL' || g.type.includes(currentFilter));
+            const filtered = RAW_GAMES_DATABASE.filter(g => currentFilter === 'ALL' || g.type === currentFilter);
             document.getElementById('gameCountBadge').innerText = `${filtered.length} Game`;
 
             if(filtered.length === 0) {
-                grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-500">Chưa có game nào trong Notion hoặc chưa cấp quyền kết nối!</div>';
+                grid.innerHTML = '<div class="col-span-full text-center py-10 text-gray-400">Không tìm thấy dữ liệu trong Database. Hãy kiểm tra lại kết nối Notion Database ID!</div>';
                 return;
             }
 
@@ -142,7 +151,7 @@
                     <div class="bg-gray-900 border border-gray-800 rounded-2xl overflow-hidden shadow-lg card-hover-glow flex flex-col cursor-pointer" onclick="openModal(${game.id})">
                         <div class="relative w-full poster-aspect bg-gray-950 overflow-hidden">
                             <img src="${game.image}" class="w-full h-full object-cover" loading="lazy">
-                            <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold ${game.type.includes('ONLINE') ? 'bg-cyan-600' : 'bg-amber-600'} text-white">${game.type}</span>
+                            <span class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold ${game.type === 'ONLINE' ? 'bg-cyan-600' : 'bg-amber-600'} text-white">${game.type}</span>
                             <span class="absolute top-2 right-2 px-2 py-0.5 rounded text-[10px] font-bold bg-black/70 text-amber-300">${game.size}</span>
                         </div>
                         <div class="p-3 flex flex-col justify-between flex-grow">
@@ -161,6 +170,7 @@
             if(!game) return;
             document.getElementById('modalTitle').innerText = game.name;
             document.getElementById('modalSize').innerText = `Dung lượng: ${game.size}`;
+            document.getElementById('modalStatus').innerText = `Trạng thái: ${game.status}`;
             document.getElementById('modalDownloadBtn').href = game.link;
             document.getElementById('gameModal').classList.remove('hidden');
         }
