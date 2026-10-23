@@ -1,0 +1,35 @@
+name: Auto Sync Notion Database
+
+on:
+  schedule:
+    - cron: '0 */3 * * *' # Tự động chạy ngầm mỗi 3 tiếng một lần
+  workflow_dispatch: # Cho phép bấm nút chạy thủ công bất cứ lúc nào trên GitHub
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install requests pandas
+
+      - name: Run Sync Script
+        env:
+          NOTION_API_TOKEN: ${{ secrets.NOTION_API_TOKEN }}
+          NOTION_OFFLINE_DB_ID: ${{ secrets.NOTION_OFFLINE_DB_ID }}
+          NOTION_ONLINE_DB_ID: ${{ secrets.NOTION_ONLINE_DB_ID }}
+        run: python sync_notion.py
+
+      - name: Commit and Push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add .
+          git diff --staged --quiet || (git commit -m "Auto sync game list from Notion database" && git push)
