@@ -8,6 +8,8 @@ on:
 jobs:
   sync:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write  # Cấp quyền ghi thẳng vào repo cho Actions
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v4
@@ -21,10 +23,6 @@ jobs:
         run: pip install requests pandas
 
       - name: Run Sync Script
-        env:
-          NOTION_API_TOKEN: ${{ secrets.NOTION_API_TOKEN }}
-          NOTION_OFFLINE_DB_ID: ${{ secrets.NOTION_OFFLINE_DB_ID }}
-          NOTION_ONLINE_DB_ID: ${{ secrets.NOTION_ONLINE_DB_ID }}
         run: python sync_notion.py
 
       - name: Commit and Push changes
