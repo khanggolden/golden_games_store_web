@@ -12,6 +12,29 @@ headers = {
     "Content-Type": "application/json"
 }
 
+def extract_property_value(prop):
+    """Tự động nhận diện và lấy dữ liệu từ các loại cột trên Notion"""
+    p_type = prop.get("type")
+    if p_type == "title":
+        title_list = prop.get("title", [])
+        return title_list[0]["plain_text"] if title_list else ""
+    elif p_type == "rich_text":
+        text_list = prop.get("rich_text", [])
+        return text_list[0]["plain_text"] if text_list else ""
+    elif p_type == "number":
+        return prop.get("number", "")
+    elif p_type == "select":
+        select_obj = prop.get("select")
+        return select_obj.get("name", "") if select_obj else ""
+    elif p_type == "multi_select":
+        return ", ".join([item["name"] for item in prop.get("multi_select", [])])
+    elif p_type == "url":
+        return prop.get("url", "")
+    elif p_type == "status":
+        status_obj = prop.get("status")
+        return status_obj.get("name", "") if status_obj else ""
+    return ""
+
 def fetch_notion_db(db_id):
     url = f"https://api.notion.com/v1/databases/{db_id}/query"
     has_more = True
@@ -25,7 +48,7 @@ def fetch_notion_db(db_id):
 
         res = requests.post(url, headers=headers, json=payload)
         if res.status_code != 200:
-            print(f"Lỗi khi gọi API: {res.text}")
+            print(f"Lỗi kết nối Notion API ({res.status_code}): {res.text}")
             break
         
         data = res.json()
@@ -36,43 +59,22 @@ def fetch_notion_db(db_id):
     rows = []
     for page in results:
         props = page.get("properties", {})
-        
-        # Lấy tên game (Title)
-        title_list = props.get("Title", {}).get("title", [])
-        title = title_list[0]["text"]["content"] if title_list else ""
-        
-        # Lấy dung lượng
-        size = props.get("Dung Lượng", {}).get("number", 0)
-        
-        # Lấy status
-        status_obj = props.get("Status", {}).get("select", {})
-        status = status_obj.get("name", "") if status_obj else ""
-        
-        # Lấy thời gian cập nhật
-        updated_list = props.get("Cập Nhật Lần Cuối", {}).get("rich_text", [])
-        updated = updated_list[0]["text"]["content"] if updated_list else ""
-
-        # Lấy người tạo
-        created_by_list = props.get("Được Tạo bởi", {}).get("rich_text", [])
-        created_by = created_by_list[0]["text"]["content"] if created_by_list else ""
-
-        rows.append({
-            "Title": title,
-            "Cập Nhật Lần Cuối": updated,
-            "Dung Lượng": size,
-            "Status": status,
-            "Được Tạo bởi": created_by
-        })
+        row_data = {}
+        for col_name, prop_data in props.items():
+            row_data[col_name] = extract_property_value(prop_data)
+        rows.append(row_data)
 
     return pd.DataFrame(rows)
 
 if __name__ == "__main__":
     if OFFLINE_DB_ID:
+        print("Đang tải dữ liệu Game Offline...")
         df_offline = fetch_notion_db(OFFLINE_DB_ID)
         df_offline.to_csv("GAME OFFLINE.csv", index=False, encoding="utf-8-sig")
-        print(f"Đã cập nhật {len(df_offline)} game Offline thành công.")
+        print(f"✅ Đã tạo file 'GAME OFFLINE.csv' với {len(df_offline)} dòng.")
 
     if ONLINE_DB_ID:
+        print("Đang tải dữ liệu Game Online...")
         df_online = fetch_notion_db(ONLINE_DB_ID)
         df_online.to_csv("GAME ONLINE.csv", index=False, encoding="utf-8-sig")
-        print(f"Đã cập nhật {len(df_online)} game Online thành công.")
+        print(f"✅ Đã tạo file 'GAME ONLINE.csv' với {len(df_online)} dòng.")
